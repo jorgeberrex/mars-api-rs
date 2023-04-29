@@ -1,0 +1,31 @@
+[package]
+name = "mars_api_rs"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+mongodb = "2.3.0"
+anyhow = "1.0.58"
+serde = { version = "1.0", features = ["derive"] }
+serde_yaml = "0.8"
+rocket = { version = "0.5.0-rc.2", features = ["json"] }
+tokio = { version = "1.6.1", features = ["fs", "io-std", "io-util", "rt-multi-thread", "sync", "signal", "macros"] }
+sha2 = "0.10.2"
+futures = "0.3.21"
+rand = "0.8.5"
+redis = { version = "0.21.5", features = ["r2d2", "aio", "tokio-comp"] }
+mars_api_rs_macro = { path = "./mars_api_rs_macro" }
+mars_api_rs_derive = { path = "./mars_api_rs_macro/mars_api_rs_derive" }
+mobc = "0.7.3"
+uuid = { version = "1.1.2", features = ["v4", "fast-rng", "macro-diagnostics"] }
+chrono = "0.4.19"
+num-traits = "0.2.15"
+strum = "0.24.1"
+strum_macros = "0.24.2"
+log = "0.4.17"
+fern = "0.6.1"
+tokio-tungstenite = "0.17.2"
+url = "2.2.2"
+flate2 = "1.0.24"
+enum_dispatch = "0.3.8"
+async-trait = "0.1.66"
