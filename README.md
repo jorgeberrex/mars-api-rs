@@ -15,8 +15,3 @@ The resulting program can be found in `target/release/mars_api_rs`. See [the ref
 ## Notes
 
 Currently, the websocket listens on port 7000 and the HTTP API listens on port 8000.
-
-## Outstanding Work
-
-- Report endpoints & Webhook
-- XP Multiplier route

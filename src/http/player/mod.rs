@@ -285,6 +285,14 @@ pub async fn issue_punishment(
         server_id: Some(auth_guard.server_id)
     };
     state.database.insert_one(&punishment).await;
+    {
+        // take ownership for the spawned task
+        let pun_clone = punishment.clone();
+        let state_clone = state.config.clone();
+        tokio::spawn(async move {
+            state_clone.webhooks.send_punishment_webhook(&pun_clone).await;
+        });
+    }
     Ok(JsonResponder::from(punishment, Status::Created))
 }
 
@@ -340,7 +348,7 @@ pub async fn lookup_player(
 }
 
 #[post("/<player_id>/notes", format = "json", data = "<add_note_req>")]
-pub async fn get_player_notes(
+pub async fn add_player_note(
     state: &State<MarsAPIState>, 
     player_id: &str,
     add_note_req: Json<PlayerAddNoteRequest>,
@@ -350,9 +358,17 @@ pub async fn get_player_notes(
     let mut player : Player = extract_player_from_url!(&player_id, state);
     let id = player.notes.iter().max_by_key(|note| note.id).map(|note| note.id).unwrap_or(0) + 1;
     let note = StaffNote { id, author: data.author, content: data.content, created_at: get_u64_time_millis() };
+    let note_clone = note.clone();
     player.notes.push(note);
-    // INVESTIGATE: This probably should not be player_id
     state.player_cache.set(&state.database, player_id, &player, true).await;
+    {
+        // take ownership for the spawned task
+        let state_clone = state.config.clone();
+        let player_simple = player.to_simple();
+        tokio::spawn(async move {
+            state_clone.webhooks.send_new_note_webhook(&player_simple, &note_clone).await;
+        });
+    }
     Ok(JsonResponder::created(player))
 }
 
@@ -365,9 +381,17 @@ pub async fn delete_player_note(
 ) -> Result<JsonResponder<Player>, ApiErrorResponder> {
     let mut player : Player = async_extract_player_from_url_v2!(&player_id, state);
     let note_index = unwrap_helper::return_default!(player.notes.iter().position(|note| { note.id == note_id }), Err(ApiErrorResponder::note_missing()));
+    let note_clone = player.notes[note_index].clone();
     player.notes.remove(note_index);
-    // INVESTIGATE: This probably should not be player_id
     state.player_cache.set(&state.database, player_id, &player, true).await;
+    {
+        // take ownership for the spawned task
+        let state_clone = state.config.clone();
+        let player_simple = player.to_simple();
+        tokio::spawn(async move {
+            state_clone.webhooks.send_deleted_note_webhook(&player_simple, &note_clone).await;
+        });
+    }
     Ok(JsonResponder::created(player))
 }
 
@@ -489,7 +513,7 @@ pub fn mount(rocket_build: Rocket<Build>) -> Rocket<Build> {
         issue_punishment, 
         get_punishments,
         lookup_player,
-        get_player_notes,
+        add_player_note,
         delete_player_note,
         set_active_tag,
         add_tag_to_player,

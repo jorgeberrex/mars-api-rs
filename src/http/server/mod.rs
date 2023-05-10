@@ -1,8 +1,8 @@
 use futures::future::join_all;
 use mongodb::bson::doc;
-use rocket::{Rocket, Build, State, http::Status};
+use rocket::{Rocket, Build, State, http::Status, serde::json::Json};
 
-use crate::{MarsAPIState, util::{auth::AuthorizationToken, error::ApiErrorResponder, time::get_u64_time_millis, r#macro::unwrap_helper, responder::JsonResponder}, database::{models::{r#match::Match, session::Session, player::Player, server::ServerEvents}, Database}, http::server::payloads::ServerStatusResponse};
+use crate::{MarsAPIState, util::{auth::AuthorizationToken, error::ApiErrorResponder, time::get_u64_time_millis, r#macro::unwrap_helper, responder::JsonResponder}, database::{models::{r#match::Match, session::Session, player::Player, server::ServerEvents}, Database}, http::server::payloads::{ServerStatusResponse, XPMultiplierRequest}};
 
 pub mod payloads;
 
@@ -108,7 +108,24 @@ async fn server_events(
     Ok(JsonResponder::ok(events))
 }
 
+#[put("/<server_id>/events/xp_multiplier", format = "json", data = "<xp_multiplier_request>")]
+async fn xp_multiplier_event(
+    state: &State<MarsAPIState>, 
+    server_id: &str,
+    xp_multiplier_request: Json<XPMultiplierRequest>,
+    auth_guard: AuthorizationToken
+) -> Result<JsonResponder<ServerEvents>, ApiErrorResponder> {
+    if server_id != auth_guard.server_id {
+        return Err(ApiErrorResponder::unauthorized());
+    };
+    let mut events : ServerEvents = state.redis.get_unchecked(&format!("server:{}:events", server_id)).await.unwrap_or(ServerEvents { 
+        xp_multiplier: None  
+    });
+    events.xp_multiplier = if xp_multiplier_request.value == 1f32 { None } else { Some(xp_multiplier_request.to_xp_multiplier()) };
+    state.redis.set(&format!("server:{}:events", server_id), &events).await;
+    Ok(JsonResponder::ok(events))
+}
 
 pub fn mount(rocket_build: Rocket<Build>) -> Rocket<Build> {
-    rocket_build.mount("/mc/servers", routes![server_startup, server_status, server_events])
+    rocket_build.mount("/mc/servers", routes![server_startup, server_status, server_events, xp_multiplier_event])
 }

@@ -298,6 +298,12 @@ pub struct SimplePlayer {
     pub id: String
 }
 
+impl SimplePlayer {
+    pub fn get_mini_icon_url(&self) -> String {
+        format!("https://crafatar.com/avatars/{}?helm&size=50", self.id)
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PlayerMessages {
     pub staff: u32,

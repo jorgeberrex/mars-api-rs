@@ -6,7 +6,7 @@ use crate::database::CollectionOwner;
 
 use super::player::SimplePlayer;
 
-#[derive(Debug, Serialize, Deserialize, IdentifiableDocument)]
+#[derive(Debug, Serialize, Deserialize, IdentifiableDocument, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct Punishment {
     #[id]
@@ -57,7 +57,7 @@ pub struct PunishmentType {
 
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PunishmentAction {
-    kind: PunishmentKind,
+    pub kind: PunishmentKind,
     #[serde(default = "default_punishment_length")]
     length: i64
 }
@@ -88,14 +88,14 @@ pub struct StaffNote {
     pub created_at: u64
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct PunishmentReason {
-    name: String, 
+    pub name: String, 
     message: String, 
     short: String
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct PunishmentReversion {
     pub reverted_at: u64,

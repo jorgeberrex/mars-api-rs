@@ -6,6 +6,7 @@ pub mod server;
 pub mod level;
 pub mod map;
 pub mod rank;
+pub mod report;
 pub mod leaderboard;
 pub mod tag;
 pub mod perks;

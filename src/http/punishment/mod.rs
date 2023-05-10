@@ -31,6 +31,14 @@ async fn revert_pun(
     let mut punishment = unwrap_helper::return_default!(Database::find_by_id(&state.database.punishments, punishment_id).await, Err(ApiErrorResponder::missing_punishment()));
     punishment.reversion = Some(PunishmentReversion { reverted_at: get_u64_time_millis(), reverter: data.reverter, reason: data.reason });
     state.database.save(&punishment).await;
+    {
+        // take ownership for the spawned task
+        let pun_clone = punishment.clone();
+        let state_clone = state.config.clone();
+        tokio::spawn(async move {
+            state_clone.webhooks.send_punishment_reversion_webhook(&pun_clone).await;
+        });
+    }
     Ok(Json(punishment))
 }
 

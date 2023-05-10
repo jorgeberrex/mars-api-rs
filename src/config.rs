@@ -4,6 +4,7 @@ use serde::Deserialize;
 use std::default::Default;
 use std::{str, env};
 use crate::database::models::punishment::PunishmentType;
+use crate::util::webhook::WebhookUtils;
 
 use super::database::models::level_color::LevelColor;
 use super::database::models::join_sound::JoinSound;
@@ -74,7 +75,12 @@ pub async fn deserialize_mars_config() -> anyhow::Result<MarsConfig> {
         deserialize_mars_options(),
         deserialize_mars_data()
     )?;
-    Ok(MarsConfig { token, options, data })
+    let webhooks = WebhookUtils::new(
+        &(if options.reports_webhook_url.is_empty() { None } else { Some(options.reports_webhook_url.clone()) }), 
+        &(if options.punishments_webhook_url.is_empty() { None } else { Some(options.punishments_webhook_url.clone()) }), 
+        &(if options.notes_webhook_url.is_empty() { None } else { Some(options.notes_webhook_url.clone()) })
+    );
+    Ok(MarsConfig { token, options, data, webhooks })
 }
 
 async fn deserialize_mars_options() -> Result<MarsConfigOptions, ConfigDeserializeError> {
@@ -143,18 +149,20 @@ async fn deserialize_mars_data_component<T: DeserializeOwned>(
 pub struct MarsConfig {
     pub token: String,
     pub options: MarsConfigOptions,
-    pub data: MarsConfigData
+    pub data: MarsConfigData,
+    pub webhooks: WebhookUtils
 }
 
-impl Default for MarsConfig {
-    fn default() -> Self {
-        MarsConfig {
-            token: String::from(""),
-            options: MarsConfigOptions::default(),
-            data: MarsConfigData::default()
-        }
-    }
-}
+// impl Default for MarsConfig {
+//     fn default() -> Self {
+//         MarsConfig {
+//             token: String::from(""),
+//             options: MarsConfigOptions::default(),
+//             data: MarsConfigData::default(),
+
+//         }
+//     }
+// }
 
 pub struct MarsConfigOptions {
     pub port: u32,
