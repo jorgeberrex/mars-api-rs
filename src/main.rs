@@ -59,12 +59,17 @@ fn rocket(state: MarsAPIState) -> Rocket<Build> {
         &http::punishment::mount,
         &http::perks::mount,
         &http::leaderboard::mount,
-        &http::report::mount
+        &http::report::mount,
+        &http::r#match::mount
     ];
     let is_debug = env::var("MARS_DEBUG").unwrap_or("false".to_owned()).parse::<bool>().unwrap_or(false);
+    let http_port = env::var("MARS_HTTP_PORT").unwrap_or("8000".to_owned()).parse::<u32>().unwrap_or(8000);
     let config : Config = Figment::from(
         if is_debug { Config::debug_default() } else { Config::release_default() }
-    ).merge::<(&str, IpAddr)>(("address", Ipv4Addr::new(0, 0, 0, 0).into())).extract().unwrap();
+    )
+        .merge::<(&str, IpAddr)>(("address", Ipv4Addr::new(0, 0, 0, 0).into()))
+        .merge(("port", http_port))
+        .extract().unwrap();
     let mut rocket_build = rocket::custom(config).manage(state);
 
     rocket_build = mounts.iter().fold(rocket_build, |mut build, mount_fn| {
@@ -161,12 +166,13 @@ async fn main() -> Result<(), String> {
         leaderboards
     };
 
+    let ws_port = env::var("MARS_WS_PORT").unwrap_or("7000".to_owned()).parse::<u32>().unwrap_or(7000);
     let res = tokio::try_join!(
         setup_rocket(state.clone()), 
         setup_socket(
             SocketState { 
                 api_state: Arc::new(state.clone())
-            }, 7000
+            }, ws_port
         )
     );
 

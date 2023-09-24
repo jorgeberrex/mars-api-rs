@@ -13,7 +13,7 @@ fn get_join_sounds(
     Json(&state.config.data.join_sounds)
 }
 
-#[post("/<player_id>/sound", format = "json", data = "<set_join_req>")]
+#[post("/join_sounds/<player_id>/sound", format = "json", data = "<set_join_req>")]
 async fn update_join_sound(
     state: &State<MarsAPIState>,
     player_id: &str,
