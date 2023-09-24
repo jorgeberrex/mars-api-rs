@@ -59,7 +59,8 @@ fn rocket(state: MarsAPIState) -> Rocket<Build> {
         &http::punishment::mount,
         &http::perks::mount,
         &http::leaderboard::mount,
-        &http::report::mount
+        &http::report::mount,
+        &http::r#match::mount
     ];
     let is_debug = env::var("MARS_DEBUG").unwrap_or("false".to_owned()).parse::<bool>().unwrap_or(false);
     let config : Config = Figment::from(
