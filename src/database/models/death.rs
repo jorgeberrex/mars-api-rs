@@ -30,7 +30,7 @@ impl CollectionOwner<Death> for Death {
     }
 
     fn get_collection_name() -> &'static str {
-        "deaths"
+        "death"
     }
 }
 

@@ -30,7 +30,7 @@ impl CollectionOwner<Rank> for Rank {
     }
 
     fn get_collection_name() -> &'static str {
-        "ranks"
+        "rank"
     }
 }
 

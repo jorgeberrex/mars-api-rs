@@ -79,7 +79,7 @@ impl CollectionOwner<Match> for Match {
     }
 
     fn get_collection_name() -> &'static str {
-        "matches"
+        "match"
     }
 }
 
@@ -123,7 +123,7 @@ pub struct GoalCollection {
 pub struct CoreGoal {
     pub id: String,
     pub name: String,
-    pub owner_name: String,
+    pub owner_name: Option<String>,
     pub material: String,
     #[serde(default = "default_simpleplayer_set")]
     pub contributors: HashSet<SimplePlayer>
@@ -134,7 +134,7 @@ pub struct CoreGoal {
 pub struct DestroyableGoal {
     pub id: String,
     pub name: String,
-    pub owner_name: String,
+    pub owner_name: Option<String>,
     pub material: String,
     pub block_count: u32,
     pub breaks_required: u32,
@@ -147,7 +147,7 @@ pub struct DestroyableGoal {
 pub struct FlagGoal {
     pub id: String,
     pub name: String,
-    pub owner_name: String,
+    pub owner_name: Option<String>,
     pub color: String
 }
 
@@ -155,7 +155,7 @@ pub struct FlagGoal {
 #[serde(rename_all = "camelCase")]
 pub struct WoolGoal {
     pub id: String,
-    pub owner_name: String,
+    pub owner_name: Option<String>,
     pub color: String
 }
 

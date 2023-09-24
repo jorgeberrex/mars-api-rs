@@ -652,7 +652,8 @@ impl SocketRouter {
     }
 
     fn parse_data<T: DeserializeOwned>(data: Value) -> T {
-        serde_json::from_value(data).expect("Socket passed malformed data..")
+        let debug_res = format!("Socket passed malformed data.. {data:?}");
+        serde_json::from_value(data).expect(&debug_res)
     }
 
     async fn get_match_id(&self) -> String {

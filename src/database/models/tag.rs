@@ -23,6 +23,6 @@ impl CollectionOwner<Tag> for Tag {
     }
 
     fn get_collection_name() -> &'static str {
-        "tags"
+        "tag"
     }
 }

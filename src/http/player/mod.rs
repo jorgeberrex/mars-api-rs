@@ -19,11 +19,11 @@ pub async fn prelogin(
     prelogin_req: Json<PlayerPreLoginRequest>, 
     player_id: &str, 
     _auth_guard: AuthorizationToken
-) -> Result<PlayerPreLoginResponder, ApiError> {
+) -> Result<PlayerPreLoginResponder, ApiErrorResponder> {
     let data = prelogin_req.0;
 
     if data.player.id != player_id {
-        return Err(ApiError::Validation(String::from("Player ID in URL does not match body")));
+        return Err(ApiErrorResponder::validation_error());
     };
 
     let ip = hash_ip(&state, &data.ip);
@@ -43,7 +43,7 @@ pub async fn prelogin(
             "action.kind": PunishmentKind::IpBan.to_string()
         }, None).await {
             Ok(cursor) => Database::consume_cursor_into_owning_vec(cursor).await,
-            Err(_) => return Err(ApiError::Validation(String::from("Could not load punishments for player")))
+            Err(_) => return Err(ApiErrorResponder::validation_error_with_message("Could not load punishments for player"))
         };
         let ip_ban = ip_punishments.first();
 
@@ -164,16 +164,16 @@ pub async fn logout(
     state: &State<MarsAPIState>, 
     logout_req: Json<PlayerLogoutRequest>, 
     _auth_guard: AuthorizationToken
-) -> Result<JsonResponder<EmptyResponse>, ApiError> {
+) -> Result<JsonResponder<EmptyResponse>, ApiErrorResponder> {
     let data = logout_req.0;
-    let mut player : Player = extract_player_from_url!(&data.player.name, state);
+    let mut player : Player = async_extract_player_from_url_v2!(&data.player.name, state);
     let mut session = if let Some(session) = state.database.find_session_for_player(&player, data.session_id).await {
         session
     } else {
-        return Err(ApiError::session_not_found())
+        return Err(ApiErrorResponder::session_not_found())
     };
     if !session.is_active() {
-        return Err(ApiError::session_inactive())
+        return Err(ApiErrorResponder::session_inactive())
     };
 
     let time_millis : u64 = u64::try_from(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis()).unwrap_or(u64::MAX);
@@ -203,9 +203,9 @@ pub async fn profile(
     state: &State<MarsAPIState>, 
     player_id: &str,
     include_leaderboard_positions: bool
-) -> Result<PlayerProfileResponder, ApiError> {
+) -> Result<PlayerProfileResponder, ApiErrorResponder> {
     let player_id = player_id.to_lowercase();
-    let player : Player = extract_player_from_url!(&player_id, state);
+    let player : Player = async_extract_player_from_url_v2!(&player_id, state);
     let profile = player.sanitized_copy();
     if !include_leaderboard_positions {
         return Ok(PlayerProfileResponder::RawProfile(profile))
@@ -265,11 +265,11 @@ pub async fn issue_punishment(
     pun_issue_req: Json<PunishmentIssueRequest>,
     _player_id: &str,
     auth_guard: AuthorizationToken
-) -> Result<JsonResponder<Punishment>, ApiError> {
+) -> Result<JsonResponder<Punishment>, ApiErrorResponder> {
     let data = pun_issue_req.0;
     let punishment_id = Uuid::new_v4().to_string();
     let time_millis : u64 = u64::try_from(SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis()).unwrap_or(u64::MAX);
-    let target_player : Player = extract_player_from_url!(&data.target_name, state);
+    let target_player : Player = async_extract_player_from_url_v2!(&data.target_name, state);
     let punishment = Punishment { 
         id: punishment_id, 
         reason: data.reason, 
@@ -302,8 +302,8 @@ pub async fn get_punishments(
     state: &State<MarsAPIState>, 
     player_id: &str,
     _auth_guard: AuthorizationToken
-) -> Result<JsonResponder<Vec<Punishment>>, ApiError> {
-    let player : Player = extract_player_from_url!(&player_id, state);
+) -> Result<JsonResponder<Vec<Punishment>>, ApiErrorResponder> {
+    let player : Player = async_extract_player_from_url_v2!(&player_id, state);
     Ok(JsonResponder::created(state.database.get_player_punishments(&player).await))
 }
 
@@ -328,8 +328,8 @@ pub async fn lookup_player(
     player_id: &str,
     include_alts: bool,
     _auth_guard: AuthorizationToken
-) -> Result<JsonResponder<PlayerLookupResponse>, ApiError> {
-    let player : Player = extract_player_from_url!(&player_id, state);
+) -> Result<JsonResponder<PlayerLookupResponse>, ApiErrorResponder> {
+    let player : Player = async_extract_player_from_url_v2!(&player_id, state);
     let alts : Vec<PlayerAltResponse> = {
         let mut alts : Vec<PlayerAltResponse> = Vec::new();
         if include_alts {
@@ -353,9 +353,9 @@ pub async fn add_player_note(
     player_id: &str,
     add_note_req: Json<PlayerAddNoteRequest>,
     _auth_guard: AuthorizationToken
-) -> Result<JsonResponder<Player>, ApiError> {
+) -> Result<JsonResponder<Player>, ApiErrorResponder> {
     let data = add_note_req.0;
-    let mut player : Player = extract_player_from_url!(&player_id, state);
+    let mut player : Player = async_extract_player_from_url_v2!(&player_id, state);
     let id = player.notes.iter().max_by_key(|note| note.id).map(|note| note.id).unwrap_or(0) + 1;
     let note = StaffNote { id, author: data.author, content: data.content, created_at: get_u64_time_millis() };
     let note_clone = note.clone();

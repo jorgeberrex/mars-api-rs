@@ -33,7 +33,7 @@ impl CollectionOwner<Level> for Level {
     }
 
     fn get_collection_name() -> &'static str {
-        "levels"
+        "level"
     }
 }
 

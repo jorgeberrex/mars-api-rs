@@ -44,6 +44,6 @@ impl CollectionOwner<Session> for Session {
     }
 
     fn get_collection_name() -> &'static str {
-        "sessions"
+        "session"
     }
 }

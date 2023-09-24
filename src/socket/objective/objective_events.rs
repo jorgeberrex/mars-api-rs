@@ -33,7 +33,7 @@ pub struct CoreLeakData {
 #[derive(Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ControlPointCaptureData {
-    pub point_id: Vec<String>,
+    pub point_id: String,
     pub player_ids: Vec<String>,
     pub party_name: String,
 }

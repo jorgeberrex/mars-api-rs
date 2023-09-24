@@ -73,7 +73,7 @@ impl Player {
 
 impl CollectionOwner<Player> for Player {
     fn get_collection(database: &crate::database::Database) -> &Collection<Player> { &database.players }
-    fn get_collection_name() -> &'static str { "players" }
+    fn get_collection_name() -> &'static str { "player" }
 }
 
 pub type GamemodeStats = PlayerStats;

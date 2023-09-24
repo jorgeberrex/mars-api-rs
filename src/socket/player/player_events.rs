@@ -16,7 +16,7 @@ pub struct PlayerDeathData {
 
 impl PlayerDeathData {
     pub fn is_murder(&self) -> bool {
-        self.attacker.is_some() && self.attacker.is_some() && self.attacker.as_ref().unwrap() == &self.victim
+        self.attacker.is_some() && self.attacker.as_ref().unwrap() != &self.victim
     }
 
     pub fn safe_weapon(&self) -> String {

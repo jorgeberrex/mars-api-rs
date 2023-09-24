@@ -35,7 +35,7 @@ impl CollectionOwner<Punishment> for Punishment {
     }
 
     fn get_collection_name() -> &'static str {
-        "punishments"
+        "punishment"
     }
 }
 

@@ -35,6 +35,22 @@ impl ApiErrorResponder {
         )
     }
 
+    pub fn session_not_found() -> Self {
+        ApiErrorResponder::create_api_error_responder(
+            Status::Conflict, 
+            &ApiExceptionType::SessionMissing, 
+            "Session not found"
+        )
+    }
+
+    pub fn session_inactive() -> Self {
+        ApiErrorResponder::create_api_error_responder(
+            Status::Conflict, 
+            &ApiExceptionType::SessionInactive, 
+            "Session inactive"
+        )
+    }
+
     pub fn rank_confict() -> Self {
         ApiErrorResponder::create_api_error_responder(
             Status::Conflict, 
