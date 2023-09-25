@@ -120,6 +120,7 @@ impl Database {
 
     pub async fn get_active_player_punishments(&self, player: &Player) -> Vec<Punishment> {
         let mut puns : Vec<Punishment> = self.get_player_punishments(player).await;
+        puns.retain(|p| p.is_active());
         puns.sort_by(|p1, p2| {
             p1.issued_at.partial_cmp(&(p2.issued_at)).unwrap_or(std::cmp::Ordering::Equal)
         });

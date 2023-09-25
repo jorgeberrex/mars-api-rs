@@ -2,7 +2,7 @@ use mars_api_rs_derive::IdentifiableDocument;
 use mars_api_rs_macro::IdentifiableDocument;
 use serde::{Serialize, Deserialize};
 use strum_macros::Display;
-use crate::database::CollectionOwner;
+use crate::{database::CollectionOwner, util::time::get_u64_time_millis};
 
 use super::player::SimplePlayer;
 
@@ -27,6 +27,24 @@ pub struct Punishment {
     pub reversion: Option<PunishmentReversion>,
     #[serde(default)]
     pub server_id: Option<String>
+}
+
+impl Punishment {
+    pub fn expires_at(&self) -> i64 {
+        if self.action.length == -1 {
+            -1
+        } else {
+            (self.issued_at as i64) + self.action.length
+        }
+    }
+
+    pub fn is_active(&self) -> bool {
+        if self.reversion.is_some() {
+            return false;
+        } else {
+            return self.action.length == -1 || (get_u64_time_millis() as i64) < self.expires_at()
+        }
+    }
 }
 
 impl CollectionOwner<Punishment> for Punishment {
