@@ -1,6 +1,6 @@
 # mars-api-rs
 
-Web API compatible with [Mars](https://github.com/Warzone/mars)
+Web API compatible with [Mars](https://github.com/Warzone/mars).
 
 ## Building
 
